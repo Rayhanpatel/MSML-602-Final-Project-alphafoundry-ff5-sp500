@@ -5,7 +5,7 @@ Long-only, monthly factor strategy using Fama–French 5 (FF5) to target outperf
 
 ## Team Members
 - Rayhan Basheer Patel		| UDI: 122087934
-<!-- - Govind Singahl			| UDI: 117780413 -->
+- Govind Singahl		    	| UDI: 117780413
 <!-- - Chaithanya Sai Musalreddy	| UDI: 122257672 -->
 
 ## Datasets (with sources)

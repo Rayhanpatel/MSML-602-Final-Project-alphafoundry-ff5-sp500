@@ -12,7 +12,7 @@ Long-only, monthly factor strategy using Fama–French 5 (FF5) to target outperf
 We use **two datasets** (within course limit):
 1) **Fama–French 5 Factors + RF (Monthly, 1963–Aug 2025)**  
    Ken French Data Library: https://mba.tuck.dartmouth.edu/pages/faculty/ken.french/data_library.html  
-   **Freshness (required, preprocessing on FF5):** If the latest month isn’t posted, we **replicate that month** using:  
+   **Freshness (required, preprocessing on FF5):** The latest month isn’t posted, we **replicate that month** using:  
    https://dilequante.com/replicate-fama-french-5-factor-model-from-publicly-available-data-sources/  
    Replicated rows are **tagged `synthetic=true`**.
 2) **S&P 500 equities & SPY** (prices & dividends) via `yfinance`  

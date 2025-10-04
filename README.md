@@ -4,11 +4,10 @@
 A reproducible factor-based investment strategy that uses rolling-window regression to estimate Fama–French 5-factor loadings for S&P 500 constituents and forecasts returns based on trailing factor exposures. A walk-forward backtest spanning 2015–2025 evaluates performance using the Sharpe ratio and cumulative returns, benchmarked against SPY across multiple time horizons.
 
 ## Team Members
-| Name                     | UDI        |
-|--------------------------|------------|
-| Rayhan Basheer Patel     | 122087934  |
-| Govind Singahl           | 117780413  |
-| Chaithanya Sai Musalreddy| 122257672  |
+
+- Rayhan Basheer Patel	  	| UDI: 122087934
+- Govind Singahl		    	  | UDI: 117780413
+- Chaithanya Sai Musalreddy | UDI: 122257672
 
 ## 2 Datasets with Sources
 - **Fama–French 5 Factors + RF (Monthly, 1963–Aug 2025)** — Ken French Data Library  

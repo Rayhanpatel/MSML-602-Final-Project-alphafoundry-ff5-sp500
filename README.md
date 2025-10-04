@@ -1,29 +1,26 @@
 # Factor-Based Portfolio to Outperform S&P 500 (Lean)
 
-## Project Topic
-Long-only, monthly factor strategy using Fama–French 5 (FF5) to target outperformance vs SPY.
+## Project Description
+A reproducible factor-based investment strategy that uses rolling-window regression to estimate Fama–French 5-factor loadings for S&P 500 constituents and forecasts returns based on trailing factor exposures. A walk-forward backtest spanning 2015–2025 evaluates performance using the Sharpe ratio and cumulative returns, benchmarked against SPY across multiple time horizons.
 
 ## Team Members
-- Rayhan Basheer Patel	  	| UDI: 122087934
-- Govind Singahl		    	  | UDI: 117780413
-- Chaithanya Sai Musalreddy | UDI: 122257672
+| Name                     | UDI        |
+|--------------------------|------------|
+| Rayhan Basheer Patel     | 122087934  |
+| Govind Singahl           | 117780413  |
+| Chaithanya Sai Musalreddy| 122257672  |
+
+## 2 Datasets with Sources
+- **Fama–French 5 Factors + RF (Monthly, 1963–Aug 2025)** — Ken French Data Library  
+  https://mba.tuck.dartmouth.edu/pages/faculty/ken.french/data_library.html  
+  *Freshness:* The latest month isn’t posted, we replicate that month using the public proxy method and tag those rows as `synthetic=true`.  
+  https://dilequante.com/replicate-fama-french-5-factor-model-from-publicly-available-data-sources/
   
-## Datasets (with sources)
-We use **two datasets** (within course limit):
-1) **Fama–French 5 Factors + RF (Monthly, 1963–Aug 2025)**  
-   Ken French Data Library: https://mba.tuck.dartmouth.edu/pages/faculty/ken.french/data_library.html  
-   **Freshness (required, preprocessing on FF5):** The latest month isn’t posted, we **replicate that month** using:  
-   https://dilequante.com/replicate-fama-french-5-factor-model-from-publicly-available-data-sources/  
-   Replicated rows are **tagged `synthetic=true`**.
-2) **S&P 500 equities & SPY** (prices & dividends) via `yfinance`  
-   https://pypi.org/project/yfinance/
+- **S&P 500 equities & SPY** (prices, dividends) via **yfinance**  
+  https://pypi.org/project/yfinance/
 
-*Reference only (not used in modeling):* JKP Global Factor Data — https://jkpfactors.com/
-
-## Why these datasets
-- **Fit for goal:** FF5 is the standard factor set; SPY/S&P 500 aligns with our benchmark.
-- **Scale & history:** 60+ years of monthly factors and deep US equity coverage = robust train/test.
-- **Reproducible & current:** Public sources, easy retrieval (`yfinance`), and latest-month FF5 replication keeps results up to date.
-
-## How we combine & model (one paragraph)
-We compute **monthly total returns** (adjusted prices/dividends) and convert to **excess returns** by subtracting RF. At each month-end, we **join on dates** (point-in-time), fit **36-month rolling OLS** of each stock’s excess return on FF5 to estimate exposures, and form a **forecast** using trailing factor means. We then **rank by predicted excess return**, buy the **Top-10** stocks **equal-weight**, and rebalance monthly with **10 bps** cost. Evaluation: annualized return/volatility, **Sharpe** (excess RF), **max drawdown**, annual returns, and turnover vs **SPY**.
+## 3 Why These Datasets (Brief Rationale)
+- **Relevance:** FF5 is a standard factor set for expected-return modeling; SPY/S&P 500 align with our benchmark objective.  
+- **Scale & history:** 60+ years of monthly factors and broad U.S. equity coverage enable robust train/test windows.  
+- **Freshness:** The latest missing factor month is replicated via the cited proxy method and clearly flagged as synthetic.  
+- **Accessibility & reproducibility:** Public, well-documented sources; `yfinance` provides adjusted prices/dividends on a monthly grid.

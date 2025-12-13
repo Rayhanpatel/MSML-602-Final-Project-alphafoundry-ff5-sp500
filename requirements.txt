@@ -4,4 +4,9 @@ matplotlib==3.8.2
 seaborn==0.13.0
 scipy==1.11.4
 yfinance==0.2.66
-lxml==6.0.2
+lxml==5.2.2
+requests==2.32.5
+jupyter==1.1.1
+ipykernel==6.29.5
+scikit-learn==1.5.2
+xgboost==2.0.3

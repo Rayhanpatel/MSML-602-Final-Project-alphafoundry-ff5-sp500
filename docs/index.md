@@ -5,83 +5,120 @@ title: Factor-Based Portfolio to Outperform the S&P 500 (SPY Benchmark)
 
 # Factor-Based Portfolio to Outperform the S&P 500 (SPY Benchmark)
 
-## Overview
-This tutorial builds a factor-based investing strategy using the Fama-French 5-factor model. We estimate rolling factor loadings (betas) for S&P 500 constituents, form a monthly return signal using only information available up to time `t-1`, and evaluate the strategy in a walk-forward backtest benchmarked against SPY.
+## 1. Introduction
+This project builds a **walk-forward** factor-based investing strategy using the **Fama–French 5-Factor (FF5)** model.
 
-## Repository entry points
+**Goal:** use only information available up to month `t-1` to form a month `t` long-only portfolio of S&P 500 constituents and benchmark against **SPY**.
 
-### Notebooks
-- `data-cleanup.ipynb`: downloads and prepares monthly returns data and benchmark data.
-- `eda.ipynb`: exploratory analysis and statistical tests.
-- `S&P500_FF5_Rolling_Strategy.ipynb`: rolling regression, return forecasting, portfolio construction, and backtest vs SPY.
+**Repository:**
+- https://github.com/Rayhanpatel/MSML-602-Final-Project-alphafoundry-ff5-sp500
 
-### Data outputs
-After running `data-cleanup.ipynb`, these files should exist in `data/raw/`:
-- `ff5_data.csv`
-- `market_data.csv`
-- `sp500.csv`
-- `spy_monthly_returns.csv`
+**Final tutorial (GitHub Pages):**
+- https://rayhanpatel.github.io/MSML-602-Final-Project-alphafoundry-ff5-sp500/
 
-## How to run
+**Submission notebook (single merged workflow):** `one.ipynb`
 
-### Install
+## 2. Data Curation (sources + preprocessing)
+We curate a monthly dataset from two public sources:
+
+- **Fama–French 5 Factors + RF (daily)** (Ken French Data Library)
+  - https://mba.tuck.dartmouth.edu/pages/faculty/ken.french/data_library.html
+- **S&P 500 equities and SPY prices** via `yfinance`
+  - https://pypi.org/project/yfinance/
+
+**Notebook:** `one.ipynb` (Data curation section)
+
+**Outputs (generated in `data/raw/`):**
+- `ff5_data.csv` (daily factors)
+- `market_data.csv` (monthly constituent returns)
+- `sp500.csv` (current constituent list)
+- `spy_monthly_returns.csv` (monthly SPY returns)
+
+`one.ipynb` defaults to cached/offline mode and will use these files if present.
+
+Note: even if `market_data.csv` begins in 2005, the backtest window starts later because the strategy uses rolling windows (e.g., 36-month beta estimation and a lagged factor forecast), which require an initial “burn-in” period.
+
+## 3. Exploratory Data Analysis (EDA)
+**Notebook:** `one.ipynb` (EDA section)
+
+We include multiple statistical methods (with plots) and three high-level conclusions:
+
+- **Method 1: Distribution + summary statistics**
+  - Market factor (`Mkt-RF`) exhibits the largest volatility; other factors are smaller “tilts”.
+- **Method 2: Outlier analysis (IQR rule)**
+  - Stress regimes (e.g., crisis periods) create outliers; we keep them because they are economically real.
+- **Method 3: Correlation + hypothesis test (Pearson)**
+  - Monthly **SPY excess returns** are extremely correlated with `Mkt-RF` (as expected), and the correlation is statistically significant.
+
+## 4. Primary / Machine Learning Analysis
+**Notebook:** `one.ipynb` (single merged notebook)
+
+### 4.1 Baseline model (rolling FF5 regression)
+For each stock, we estimate rolling 36-month FF5 exposures using **excess returns**:
+
+`R_excess = R_stock - RF`
+
+We then forecast month `t` returns using:
+
+- rolling betas estimated from months `< t`
+- a **lagged** factor expectation (rolling mean shifted by 1 month)
+- **no alpha/intercept** in the prediction signal (reduces overfitting risk)
+
+Each month we go **long-only** and equal-weight the top 50 stocks by predicted signal.
+
+### 4.2 Two-model ML comparison (Linear vs XGBoost learning-to-rank)
+We compare two ML models in a walk-forward manner to rank stocks within each month, using the same feature set (rolling FF5 betas):
+
+- **Model 1:** Logistic Regression (linear)
+- **Model 2:** XGBoost learning-to-rank (`XGBRanker`)
+
+## 5. Visualization (results)
+`one.ipynb` saves plots to `docs/assets/`.
+
+### Cumulative returns
+![Cumulative Returns: Strategy vs SPY](assets/strategy_cumulative_returns.png)
+
+### Drawdowns
+![Drawdowns: Strategy vs SPY](assets/strategy_drawdowns.png)
+
+### Rolling 12-month returns
+![Rolling 12-Month Returns](assets/strategy_rolling_12m_returns.png)
+
+### Linear vs XGBoost vs SPY (comparison)
+![Cumulative Returns: Linear vs XGBoost vs SPY](assets/strategy_cumulative_returns_xgb_compare.png)
+
+## 6. Results Summary and Final Decision
+
+- We evaluate all models **walk-forward** (no look-ahead): month `t` decisions use information available through `t-1`.
+- In the latest run, **XGBoost learning-to-rank** outperformed the linear model and SPY on the aligned out-of-sample window (higher risk-adjusted performance).
+- **Final model choice:** **XGBoost learning-to-rank**.
+
+## 7. Data Science Ethics
+Key ethical / fairness considerations for this project:
+
+- **Survivorship bias:** `sp500.csv` reflects a modern constituent list; delisted names are missing. This can inflate historical performance.
+- **Missingness bias:** IPOs and incomplete histories reduce training data and can change which names are eligible for selection.
+- **Transparency:** we make the walk-forward timing explicit (`t-1` information only) and keep outputs reproducible via pinned dependencies.
+
+## 8. Limitations
+- Survivorship bias from constituent list construction.
+- Missing data for IPOs/delistings and data gaps.
+- **Transaction costs are not modeled in the default results (gross returns).** `one.ipynb` includes a simple turnover-based cost sensitivity check; adding realistic costs/slippage would likely reduce performance.
+
+## 9. Reproducibility (how to run)
+Install dependencies:
+
 ```bash
 pip install -r requirements.txt
 ```
 
-### Execute
-Run the notebooks in this exact order (Kernel: Restart & Run All):
-1. `data-cleanup.ipynb`
-2. `eda.ipynb`
-3. `S&P500_FF5_Rolling_Strategy.ipynb`
+Run the notebooks in this order (Kernel: Restart & Run All):
+1. `one.ipynb`
 
-## Data sources
-- Fama-French 5 Factors + RF: Ken French Data Library
-  - https://mba.tuck.dartmouth.edu/pages/faculty/ken.french/data_library.html
-- S&P 500 equities and SPY prices: `yfinance`
-  - https://pypi.org/project/yfinance/
+If `one.ipynb` reports missing CSV inputs:
+- Set `USE_CACHED_DATA = False` at the top of the notebook to allow downloads and regenerate the cache.
+- Then set it back to `USE_CACHED_DATA = True` for an offline/reproducible run.
 
-## Method summary (high level)
-- Rolling-window OLS (monthly) to estimate FF5 betas.
-- Excess returns are used (return minus `RF`).
-- Factor expectations for prediction are computed using only historical information up to time `t-1`.
-- Monthly rebalance into an equal-weighted long-only portfolio of the top-ranked stocks by predicted return.
-- Monthly timestamps are standardized to month-start to align data sources.
-- Benchmark performance is computed using SPY monthly returns.
-
-## Key results (from the latest notebook run)
-
-Backtest window and headline metrics are printed by `S&P500_FF5_Rolling_Strategy.ipynb` after a full run.
-
-- **Backtest window**
-  - 2008-02 to 2025-10 (213 months)
-- **Sharpe (excess returns, annualized)**
-  - Strategy (gross): ~0.77
-  - Strategy (net, 10 bps turnover cost): ~0.76
-  - SPY: ~0.69
-- **CAGR (total returns)**
-  - Strategy (gross): ~16.3%
-  - Strategy (net): ~16.1%
-  - SPY: ~11.5%
-
-### Plots (saved to `docs/assets/` by the strategy notebook)
-
-If you re-run the strategy notebook, it will export these images automatically.
-
-#### Cumulative returns
-![Cumulative Returns: Strategy vs SPY](assets/strategy_cumulative_returns.png)
-
-#### Drawdowns
-![Drawdowns: Strategy vs SPY](assets/strategy_drawdowns.png)
-
-#### Rolling 12-month returns
-![Rolling 12-Month Returns](assets/strategy_rolling_12m_returns.png)
-
-## Limitations
-- Survivorship bias from constituent list construction.
-- Missing data for IPOs/delistings and data gaps.
-- Transaction costs and slippage are simplified (modeled as bps cost times portfolio turnover).
-
-## References
+## 10. References
 - Ken French Data Library (Fama-French factors): https://mba.tuck.dartmouth.edu/pages/faculty/ken.french/data_library.html
 - yfinance (Yahoo Finance data access): https://pypi.org/project/yfinance/
